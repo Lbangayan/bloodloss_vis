@@ -4,19 +4,24 @@ import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
 const formContainer = d3.select("body").append("div").attr("class", "form-container");
 const form = formContainer.append("form");
 
-// Define anesthesia drug names
-const drugNames =['intraop_eph', 'intraop_phe', 'intraop_epi'];
+// Define anesthesia drug names with actual names
+const drugNames = [
+    { id: "intraop_eph", name: "Ephedrine (mg)" },
+    { id: "intraop_phe", name: "Phenylephrine (mcg)" },
+    { id: "intraop_epi", name: "Epinephrine (mcg)" }
+];
+
 const drugSliders = {};
 
 // Create slider container
 const sliderContainer = formContainer.append("div").attr("class", "slider-container");
 
-// Create sliders for each drug
+// Create sliders for each drug with clear labels
 drugNames.forEach(drug => {
     const drugDiv = sliderContainer.append("div").attr("class", "slider-group");
 
-    drugDiv.append("label").text(`${drug} (mg): `);
-    drugSliders[drug] = drugDiv.append("input")
+    drugDiv.append("label").text(`${drug.name}: `); // Use actual drug name
+    drugSliders[drug.id] = drugDiv.append("input")
         .attr("type", "range")
         .attr("min", 0)
         .attr("max", 100)  // Adjust based on drug dosage range
@@ -46,13 +51,12 @@ function estimateBloodLoss() {
     const drugWeights = {
         "intraop_eph": 1.5,
         "intraop_phe": 0.2,
-        "intraop_epi": 2.0,
-
+        "intraop_epi": 2.0
     };
 
     drugNames.forEach(drug => {
-        const drugDose = Number(drugSliders[drug].property("value"));
-        estimatedBloodLoss += drugDose * drugWeights[drug];  // Weighted impact on blood loss
+        const drugDose = Number(drugSliders[drug.id].property("value"));
+        estimatedBloodLoss += drugDose * drugWeights[drug.id];  // Weighted impact on blood loss
     });
 
     return estimatedBloodLoss;
