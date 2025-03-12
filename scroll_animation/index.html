@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vasoconstriction Scroll Animation</title>
+    <style>
+        body {
+            margin: 0;
+            height: 200vh; /* Extra height to enable scrolling */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            font: 100%/1.5 system-ui;
+            max-width: 100ch;
+            margin-inline: auto;
+            padding: 0 1rem;
+        }
+        .nav-container {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        nav ul,
+        nav li {
+            display: contents;
+        }
+        nav {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid oklch(80% 3% 200%);
+        }
+        nav a {
+            flex: 1;
+            text-decoration: none;
+            color: inherit;
+            text-align: center;
+            padding: 0.5em;
+        }
+        nav a.current {
+            border-bottom: 0.4em solid oklch(80% 3% 200%);
+            padding-bottom: 0.1em;
+        }
+        nav a:hover {
+            border-bottom: 0.4em solid var(--color--accent);
+        }
+        .title {
+            margin-top: 60px; /* Adjust to ensure title is below the nav */
+            font-size: 24px;
+            font-weight: bold;
+            background-color: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+        }
+        .container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        .vessel {
+            width: 1000px;
+            height: 300px;
+            background-color: transparent;
+            border: 2px solid red;
+            border-radius: 50px;
+            overflow: hidden;
+            position: relative;
+        }
+        .circle {
+            width: 30px;
+            height: 30px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            top: 70%; /* Adjusted from 70% to 65% to translate up */
+            transform: translateY(-50%);
+            animation: moveRight 5s linear infinite, bounce 2s ease-in-out infinite;
+        }
+        .spacer {
+            height: 150vh;
+        }
+        @keyframes moveRight {
+            0% {
+                left: -30px;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(-50%);
+            }
+            50% {
+                transform: translateY(${-(height * 0.8 - 30)}px);
+            }
+        }
+        :root {
+            --color--accent: oklch(66.67% 30% 296.47);
+        }
+        html {
+            accent-color: var(--color--accent);
+        }
+        
+    </style>
+</head>
+<body>
+    <div class="nav-container">
+        <nav>
+            <ul>
+                <li><a href="../index.html">Introduction</a></li>
+                <li><a href="../scroll_animation/index.html">Drug explaination</a></li>
+                <li><a href="../bloodpressure/index.html">Blood Pressure</a></li>
+            </ul>
+        </nav>
+        <div class="title">Vasoconstriction Scroll Animation</div>
+
+    </div>
+    <div class="spacer"></div>
+    <div class="container">
+        <p> The drugs Ephedrine, Phenylephrine, and Epinephrine are known as vasopressors
+            and inotropes. They are used to increase blood pressure and cardiac output.
+            These drugs are used to treat patients with dangerously low blood pressure to
+            help get blood to vital organs. This leads to vasoconstriction which is the constricting of arteries.
+        </p>
+        <div class="vessel" id="vessel"></div>
+        <p>Scroll down to see vasoconstriction caused by vasopressors and inotropes</p>
+    </div>
+    <div class="spacer"></div>
+
+    <!-- <script src="../global.js"></script> -->
+    <script>
+        window.addEventListener("scroll", function () {
+            let scrollPercent = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+            let newHeight = 300 - scrollPercent * 200; // Reduces height from 300px to 100px
+            document.getElementById("vessel").style.height = newHeight + "px";
+            updateBounceAnimation(newHeight);
+        });
+
+        // Function to create and animate circles
+        function createCircles() {
+            const vessel = document.getElementById("vessel");
+            for (let i = 0; i < 10; i++) {
+                const circle = document.createElement("div");
+                circle.className = "circle";
+                circle.style.animationDelay = `${i * 0.5}s`;
+                vessel.appendChild(circle);
+            }
+        }
+
+        // Function to update the bounce animation based on vessel height
+        function updateBounceAnimation(height) {
+            const styleSheet = document.styleSheets[0];
+            const bounceKeyframes = `
+                @keyframes bounce {
+                    0%, 100% {
+                        transform: translateY(-50%);
+                    }
+                    50% {
+                        transform: translateY(${-(height * 0.8 - 30)}px);
+                    }
+                }
+            `;
+            if (styleSheet.cssRules.length > 0) {
+                styleSheet.deleteRule(styleSheet.cssRules.length - 1);
+            }
+            styleSheet.insertRule(bounceKeyframes, styleSheet.cssRules.length);
+        }
+
+        createCircles();
+        updateBounceAnimation(300); // Initial call to set the bounce animation
+    </script>
+</body>
+</html>
