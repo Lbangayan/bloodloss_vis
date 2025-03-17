@@ -565,179 +565,299 @@
         });
     </script>
     <h1>Blood Loss vs Age with Hypertension Toggle</h1>
+<label for="hypertension-dropdown">Hypertension Status:</label>
+   <select id="hypertension-dropdown">
+       <option value="1">Hypertensive</option>
+       <option value="0">Non-Hypertensive</option>
+   </select>
+   <label for="gender-dropdown">Gender:</label>
+   <select id="gender-dropdown">
+       <option value="all">All</option>
+       <option value="0">Female</option>
+       <option value="1">Male</option>
+   </select>
 
-    <select id="hypertension-dropdown">
-        <option value="1">Hypertensive</option>
-        <option value="0">Non-Hypertensive</option>
-    </select>
 
-    <!-- SVG Container for the Chart -->
-    <div id="chart"></div>
 
-    <script>
-        // Data loading and setup
-        d3.json('health_data').then(data => {
-            // Process data: Ensure proper types
-            data = data.map(d => ({
-                age: +d.age,
-                intraop_ebl: +d.intraop_ebl,
-                preop_htn: +d.preop_htn // assuming 1 is hypertensive, 0 is non-hypertensive
-            }));
-    
-            // Set up SVG container and dimensions
-            const width = 900;
-            const height = 500;
-            const margin = { top: 20, right: 20, bottom: 60, left: 60 };
-    
-            const svg = d3.select("#chart")
-                .append("svg")
-                .attr("width", width)
-                .attr("height", height)
-                .append("g")
-                .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-            // Define the age bins (e.g., 0-10, 11-20, etc.)
-            const binSize = 10;  // Change this value for finer/coarser bins
-            const maxAge = d3.max(data, d => d.age);
-            const ageBins = d3.range(0, maxAge + binSize, binSize);
-    
-            // Function to calculate mean
-            function mean(values) {
-                const sum = values.reduce((a, b) => a + b, 0);
-                return sum / values.length;
-            }
-    
-            // Function to bin data by age and calculate the mean blood loss for each bin
-            function binDataByAgeAndHypertension(data, hypertensionStatus) {
-                // Filter data by hypertension status
-                const filteredData = data.filter(d => d.preop_htn === hypertensionStatus);
-    
-                // Group data by age bins and calculate mean blood loss for each bin
-                const binnedData = ageBins.map(binStart => {
-                    const binEnd = binStart + binSize;
-                    const binData = filteredData.filter(d => d.age >= binStart && d.age < binEnd);
-                    const meanEBL = binData.length > 0 ? mean(binData.map(d => d.intraop_ebl)) : null;
-                    return { bin: `${binStart}-${binEnd}`, meanEBL: meanEBL };
-                });
-    
-                // Remove bins with no data and remove the 90-100 bin
-                return binnedData.filter(d => d.meanEBL !== null && d.bin !== '90-100');
-            }
-    
-            // Initial chart render: Show hypertensive group by default
-            let currentData = binDataByAgeAndHypertension(data, 1); // Start with hypertensive group
-    
-            // Scales
-            const xScale = d3.scaleBand()
-                .domain(currentData.map(d => d.bin))
-                .range([0, width - margin.left - margin.right])
-                .padding(0.1);
-    
-            const yScale = d3.scaleLinear()
-                .domain([0, d3.max(currentData, d => d.meanEBL)])
-                .range([height - margin.top - margin.bottom, 0]);
-    
-            // Axis
-            const xAxis = d3.axisBottom(xScale);
-            const yAxis = d3.axisLeft(yScale).ticks(10);
-    
-            svg.append("g")
-                .attr("class", "x-axis")
-                .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
-                .call(xAxis);
-    
-            svg.append("g")
-                .attr("class", "y-axis")
-                .call(yAxis);
-    
-            // Create a tooltip
-            const tooltip = d3.select("body")
-                .append("div")
-                .attr("class", "tooltip")
-                .style("position", "absolute")
-                .style("visibility", "hidden")
-                .style("background-color", "lightsteelblue")
-                .style("padding", "5px")
-                .style("border-radius", "5px");
-    
-            // Bar chart function
-            function updateChart() {
-                // Get the selected hypertension status from the dropdown
-                const hypertensionStatus = +document.getElementById("hypertension-dropdown").value;
-    
-                // Bin the data by age and hypertension status
-                const newData = binDataByAgeAndHypertension(data, hypertensionStatus);
-    
-                // Update the scales based on the new data
-                xScale.domain(newData.map(d => d.bin));
-                yScale.domain([0, d3.max(newData, d => d.meanEBL)]);
-    
-                // Clear the previous bars (if any)
-                svg.selectAll(".bar").remove();
-    
-                // Add the bars for the new data
-                svg.selectAll(".bar")
-                    .data(newData)
-                    .enter()
-                    .append("rect")
-                    .attr("class", "bar")
-                    .attr("x", d => xScale(d.bin))
-                    .attr("y", d => yScale(d.meanEBL))
-                    .attr("width", xScale.bandwidth())
-                    .attr("height", d => height - margin.top - margin.bottom - yScale(d.meanEBL))
-                    .attr("fill", "steelblue")
-                    .on("mouseover", function(event, d) {
-                        tooltip.style("visibility", "visible")
-                            .text(`Mean Blood Loss: ${d.meanEBL.toFixed(2)} mL`)
-                            .style("top", `${event.pageY + 10}px`)
-                            .style("left", `${event.pageX + 10}px`);
-                    })
-                    .on("mousemove", function(event) {
-                        tooltip.style("top", `${event.pageY + 10}px`)
-                            .style("left", `${event.pageX + 10}px`);
-                    })
-                    .on("mouseout", function() {
-                        tooltip.style("visibility", "hidden");
-                    });
-    
-                // Update axes
-                svg.select(".x-axis")
-                    .transition()
-                    .duration(500)
-                    .call(xAxis);
-    
-                svg.select(".y-axis")
-                    .transition()
-                    .duration(500)
-                    .call(yAxis);
-            }
-    
-            // Initial render
-            updateChart();
-    
-            // Listen for changes in the dropdown and update the chart accordingly
-            d3.select("#hypertension-dropdown").on("change", updateChart);
-    
-            // Add axes labels
-            svg.append("text")
-                .attr("class", "x-label")
-                .attr("text-anchor", "middle")
-                .attr("x", width / 2)
-                .attr("y", height - margin.top)
-                .text("Age Bins");
-    
-            svg.append("text")
-                .attr("class", "y-label")
-                .attr("text-anchor", "middle")
-                .attr("transform", "rotate(-90)")
-                .attr("x", -height / 2)
-                .attr("y", -margin.left + 20)
-                .text("Mean Blood Loss (mL)");
-        });
-    </script>
 
-</script src = "global.js">
-    
-    
-    
-</body>
+   <!-- SVG Container for the Chart -->
+   <div id="chart"></div>
+
+
+   <script>
+d3.json('health_data').then(data => {
+   // Process data: Ensure proper types
+   data = data.map(d => ({
+       age: +d.age,
+       intraop_ebl: +d.intraop_ebl,
+       preop_htn: +d.preop_htn,
+       sex: d.sex === "M" ? 1 : 0 // Convert "M" to 1 and "F" to 0
+   }));
+
+
+   // Remove data for people aged 0-10
+   data = data.filter(d => d.age >= 10);
+
+
+   // Set up SVG container and dimensions
+   const width = 900;
+   const height = 500;
+   const margin = { top: 20, right: 20, bottom: 60, left: 60 };
+
+
+   const svg = d3.select("#chart")
+       .append("svg")
+       .attr("width", width)
+       .attr("height", height)
+       .append("g")
+       .attr("transform", `translate(${margin.left},${margin.top})`);
+
+
+   // Define the age bins (e.g., 10-20, 20-30, etc.)
+   const binSize = 10;  // Change this value for finer/coarser bins
+   const maxAge = d3.max(data, d => d.age);
+   const ageBins = d3.range(10, maxAge + binSize, binSize); // Start from 10
+
+
+   // Function to calculate mean
+   function mean(values) {
+       const sum = values.reduce((a, b) => a + b, 0);
+       return sum / values.length;
+   }
+
+
+   // Function to bin data by age and calculate the mean blood loss for each bin
+   function binDataByAgeAndHypertension(data, hypertensionStatus, genderFilter) {
+       // Filter data by hypertension status
+       let filteredData = data.filter(d => d.preop_htn === hypertensionStatus);
+
+
+       // Filter data by gender if a specific gender is selected
+       if (genderFilter !== "all") {
+           filteredData = filteredData.filter(d => d.sex === +genderFilter);
+       }
+
+
+       // Group data by age bins and calculate mean blood loss for each bin
+       const binnedData = ageBins.map(binStart => {
+           const binEnd = binStart + binSize;
+           const binData = filteredData.filter(d => d.age >= binStart && d.age < binEnd);
+
+
+           // Calculate mean blood loss for females and males separately
+           const femaleData = binData.filter(d => d.sex === 0);
+           const maleData = binData.filter(d => d.sex === 1);
+
+
+           const meanEBLFemale = femaleData.length > 0 ? mean(femaleData.map(d => d.intraop_ebl)) : null;
+           const meanEBLMale = maleData.length > 0 ? mean(maleData.map(d => d.intraop_ebl)) : null;
+
+
+           return {
+               bin: `${binStart}-${binEnd}`,
+               meanEBLFemale: meanEBLFemale,
+               meanEBLMale: meanEBLMale
+           };
+       });
+
+
+       // Remove bins with no data
+       return binnedData.filter(d => (d.meanEBLFemale !== null || d.meanEBLMale !== null));
+   }
+
+
+   // Initial chart render: Show hypertensive group by default
+   let currentData = binDataByAgeAndHypertension(data, 1, "all");
+
+
+   // Scales
+   const xScale = d3.scaleBand()
+       .domain(currentData.map(d => d.bin))
+       .range([0, width - margin.left - margin.right])
+       .padding(0.1);
+
+
+   const yScale = d3.scaleLinear()
+       .domain([0, d3.max(currentData, d => Math.max(d.meanEBLFemale || 0, d.meanEBLMale || 0))])
+       .range([height - margin.top - margin.bottom, 0]);
+
+
+   // Axis
+   const xAxis = d3.axisBottom(xScale);
+   const yAxis = d3.axisLeft(yScale).ticks(10);
+
+
+   svg.append("g")
+       .attr("class", "x-axis")
+       .attr("transform", `translate(0,${height - margin.top - margin.bottom})`)
+       .call(xAxis);
+
+
+   svg.append("g")
+       .attr("class", "y-axis")
+       .call(yAxis);
+
+
+   // Create a tooltip
+   const tooltip = d3.select("body")
+       .append("div")
+       .attr("class", "tooltip")
+       .style("position", "absolute")
+       .style("visibility", "hidden")
+       .style("background-color", "lightsteelblue")
+       .style("padding", "5px")
+       .style("border-radius", "5px");
+
+
+   // Bar chart function
+   function updateChart() {
+       // Get the selected hypertension status and gender
+       const hypertensionStatus = +document.getElementById("hypertension-dropdown").value;
+       const genderFilter = document.getElementById("gender-dropdown").value;
+
+
+       // Bin the data by age, hypertension status, and gender
+       const newData = binDataByAgeAndHypertension(data, hypertensionStatus, genderFilter);
+
+
+       // Update the scales based on the new data
+       xScale.domain(newData.map(d => d.bin));
+       yScale.domain([0, d3.max(newData, d => Math.max(d.meanEBLFemale || 0, d.meanEBLMale || 0))]);
+
+
+       // Clear all bars before redrawing
+       svg.selectAll(".bar").remove();
+
+
+       // Add the bars for females (only if gender is "all" or "female")
+       if (genderFilter === "all" || genderFilter === "0") {
+           svg.selectAll(".bar-female")
+               .data(newData)
+               .enter()
+               .append("rect")
+               .attr("class", "bar bar-female")
+               .attr("x", d => xScale(d.bin))
+               .attr("y", d => yScale(d.meanEBLFemale || 0))
+               .attr("width", xScale.bandwidth())
+               .attr("height", d => height - margin.top - margin.bottom - yScale(d.meanEBLFemale || 0))
+               .attr("fill", d => {
+                   // Increase opacity if male bar is taller (overlaps female bar)
+                   const isOverlapped = d.meanEBLMale > d.meanEBLFemale;
+                   return isOverlapped ? "rgba(255, 192, 203, 1)" : "rgba(255, 192, 203, 0.6)";
+               })
+               .attr("stroke", "darkred") // Add a border
+               .attr("stroke-width", 1) // Border width
+               .on("mouseover", function(event, d) {
+                   const genderFilter = document.getElementById("gender-dropdown").value;
+                   if (genderFilter === "all") {
+                       tooltip.style("visibility", "visible")
+                           .html(`
+                               <strong>Age Bin:</strong> ${d.bin}<br>
+                               <strong>Female Mean Blood Loss:</strong> ${d.meanEBLFemale ? d.meanEBLFemale.toFixed(2) : "N/A"} mL<br>
+                               <strong>Male Mean Blood Loss:</strong> ${d.meanEBLMale ? d.meanEBLMale.toFixed(2) : "N/A"} mL
+                           `)
+                           .style("top", `${event.pageY + 10}px`)
+                           .style("left", `${event.pageX + 10}px`);
+                   } else {
+                       tooltip.style("visibility", "visible")
+                           .text(`Female Mean Blood Loss: ${d.meanEBLFemale ? d.meanEBLFemale.toFixed(2) : "N/A"} mL`)
+                           .style("top", `${event.pageY + 10}px`)
+                           .style("left", `${event.pageX + 10}px`);
+                   }
+               })
+               .on("mousemove", function(event) {
+                   tooltip.style("top", `${event.pageY + 10}px`)
+                       .style("left", `${event.pageX + 10}px`);
+               })
+               .on("mouseout", function() {
+                   tooltip.style("visibility", "hidden");
+               });
+       }
+
+
+       // Add the bars for males (only if gender is "all" or "male")
+       if (genderFilter === "all" || genderFilter === "1") {
+           svg.selectAll(".bar-male")
+               .data(newData)
+               .enter()
+               .append("rect")
+               .attr("class", "bar bar-male")
+               .attr("x", d => xScale(d.bin))
+               .attr("y", d => yScale(d.meanEBLMale || 0))
+               .attr("width", xScale.bandwidth())
+               .attr("height", d => height - margin.top - margin.bottom - yScale(d.meanEBLMale || 0))
+               .attr("fill", "rgba(0, 0, 139, 0.6)") // Semi-transparent dark blue for males
+               .attr("stroke", "darkblue") // Add a border
+               .attr("stroke-width", 1) // Border width
+               .on("mouseover", function(event, d) {
+                   const genderFilter = document.getElementById("gender-dropdown").value;
+                   if (genderFilter === "all") {
+                       tooltip.style("visibility", "visible")
+                           .html(`
+                               <strong>Age Bin:</strong> ${d.bin}<br>
+                               <strong>Female Mean Blood Loss:</strong> ${d.meanEBLFemale ? d.meanEBLFemale.toFixed(2) : "N/A"} mL<br>
+                               <strong>Male Mean Blood Loss:</strong> ${d.meanEBLMale ? d.meanEBLMale.toFixed(2) : "N/A"} mL
+                           `)
+                           .style("top", `${event.pageY + 10}px`)
+                           .style("left", `${event.pageX + 10}px`);
+                   } else {
+                       tooltip.style("visibility", "visible")
+                           .text(`Male Mean Blood Loss: ${d.meanEBLMale ? d.meanEBLMale.toFixed(2) : "N/A"} mL`)
+                           .style("top", `${event.pageY + 10}px`)
+                           .style("left", `${event.pageX + 10}px`);
+                   }
+               })
+               .on("mousemove", function(event) {
+                   tooltip.style("top", `${event.pageY + 10}px`)
+                       .style("left", `${event.pageX + 10}px`);
+               })
+               .on("mouseout", function() {
+                   tooltip.style("visibility", "hidden");
+               });
+       }
+
+
+       // Update axes
+       svg.select(".x-axis")
+           .transition()
+           .duration(500)
+           .call(xAxis);
+
+
+       svg.select(".y-axis")
+           .transition()
+           .duration(500)
+           .call(yAxis);
+   }
+
+
+   // Initial render
+   updateChart();
+
+
+   // Listen for changes in the dropdowns and update the chart accordingly
+   d3.select("#hypertension-dropdown").on("change", updateChart);
+   d3.select("#gender-dropdown").on("change", updateChart);
+
+
+   // Add axes labels
+   svg.append("text")
+       .attr("class", "x-label")
+       .attr("text-anchor", "middle")
+       .attr("x", width / 2)
+       .attr("y", height - margin.top)
+       .text("Age Bins");
+
+
+   svg.append("text")
+       .attr("class", "y-label")
+       .attr("text-anchor", "middle")
+       .attr("transform", "rotate(-90)")
+       .attr("x", -height / 2)
+       .attr("y", -margin.left + 20)
+       .text("Mean Blood Loss (mL)");
+});
+   </script>
+
+
+

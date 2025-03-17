@@ -31,7 +31,7 @@ html{
 }
 
 nav a:hover {
-  border-bottom: 0.4em solid var(--color-accent);
+  border-bottom: 0.4em solid var(--color--accent); /* Corrected variable name */
 }
 body {
   /* Set line height to 1.5 times the font size
@@ -42,4 +42,3 @@ body {
   margin-inline: auto;
   padding: 0 1rem;
  }
- 
