@@ -1,135 +1,186 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
 
-// Set up SVG container
-const width = 700, height = 300;
-const svg = d3.select("#blood-vessel")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .style("background", "black");
+// Load Data
+d3.json("health_data").then(data => {
+    console.log("Loaded Data:", data);
 
-// Define anesthesia drug names
-const drugNames = ['intraop_eph', 'intraop_phe', 'intraop_epi'];
-const drugSliders = {};
-
-// Create slider container
-const sliderContainer = formContainer.append("div").attr("class", "slider-container");
-
-drugNames.forEach(drug => {
-    const drugDiv = sliderContainer.append("div").attr("class", "slider-group");
-    drugDiv.append("label").text(`${drug} (mg): `);
-    drugSliders[drug] = drugDiv.append("input")
-        .attr("type", "range")
-        .attr("min", 0)
-        .attr("max", 100)
-        .attr("step", 1)
-        .attr("value", 50);
-});
-
-d3.json('health_data').then(data => {
-    window.data = data;
-    updateVisualization();
-}).catch(error => {
-    console.error('Error loading the data:', error);
-});
-
-function estimateBloodLoss() {
-    let estimatedBloodLoss = 300;
-    const drugWeights = { "intraop_eph": 1.5, "intraop_phe": 0.2, "intraop_epi": 2.0 };
-    drugNames.forEach(drug => {
-        const drugDose = Number(drugSliders[drug].property("value"));
-        estimatedBloodLoss += drugDose * drugWeights[drug];
-    });
-    return estimatedBloodLoss;
-}
-
-function createBloodLossHistogram(parentDiv, data, estimatedBloodLoss) {
-    const width = 600, height = 400, margin = { top: 20, right: 150, bottom: 40, left: 60 };
-    parentDiv.select("svg").remove();
-
-    const validData = data.filter(d => d.intraop_ebl !== undefined && !isNaN(d.intraop_ebl));
-    const maxBloodLoss = d3.max(validData, d => d.intraop_ebl);
-    const binWidth = 100;
-    const thresholds = d3.range(0, maxBloodLoss + binWidth, binWidth);
-
-    const binGenerator = d3.histogram()
-        .domain([0, maxBloodLoss])
-        .thresholds(thresholds)
-        .value(d => d.intraop_ebl);
-
-    const bins = binGenerator(validData);
-
-    const xScale = d3.scaleLinear().domain([0, 1500]).range([margin.left, width - margin.right]);
-    const yScale = d3.scaleLinear().domain([0, d3.max(bins, d => d.length)]).range([height - margin.bottom, margin.top]);
-
-    const svg = parentDiv.append("svg").attr("width", width).attr("height", height);
-
-    svg.append("g").attr("transform", `translate(0,${height - margin.bottom})`)
-        .call(d3.axisBottom(xScale).tickFormat(d => `${d} mL`));
-
-    svg.append("g").attr("transform", `translate(${margin.left},0)`).call(d3.axisLeft(yScale));
-
-    let selectedPatients = 0;
-    let selectedBloodLoss = [];
-
-    const updateSelectionDisplay = () => {
-        const meanBloodLoss = selectedBloodLoss.length > 0 ? (selectedBloodLoss.reduce((a, b) => a + b, 0) / selectedBloodLoss.length).toFixed(1) : 0;
-        d3.select("#selected-count").text(`Selected Patients: ${selectedPatients}`);
-        d3.select("#mean-blood-loss").text(`Mean Blood Loss: ${meanBloodLoss} mL`);
-    };
-
-    const bars = svg.selectAll("rect").data(bins).enter().append("rect")
-        .attr("x", d => xScale(d.x0))
-        .attr("y", d => yScale(d.length))
-        .attr("width", d => Math.max(1, xScale(d.x1) - xScale(d.x0) - 1))
-        .attr("height", d => height - margin.bottom - yScale(d.length))
-        .attr("fill", "steelblue")
-        .attr("opacity", 0.7)
-        .on("click", function(event, d) {
-            const bar = d3.select(this);
-            const isSelected = bar.classed("selected");
-            bar.classed("selected", !isSelected).attr("fill", isSelected ? "steelblue" : "orange");
-            if (isSelected) {
-                selectedPatients -= d.length;
-                selectedBloodLoss = selectedBloodLoss.filter(val => !d.includes(val));
-            } else {
-                selectedPatients += d.length;
-                selectedBloodLoss = selectedBloodLoss.concat(d.map(val => val.intraop_ebl));
-            }
-            updateSelectionDisplay();
-        });
-
-    if (!isNaN(estimatedBloodLoss)) {
-        svg.append("line")
-            .attr("x1", xScale(estimatedBloodLoss))
-            .attr("x2", xScale(estimatedBloodLoss))
-            .attr("y1", margin.top)
-            .attr("y2", height - margin.bottom)
-            .attr("stroke", "red")
-            .attr("stroke-dasharray", "4 4")
-            .attr("stroke-width", 2);
-
-        svg.append("text")
-            .attr("x", xScale(estimatedBloodLoss) + 5)
-            .attr("y", margin.top + 10)
-            .attr("fill", "red")
-            .style("font-size", "12px")
-            .text(`Predicted Blood Loss: ${estimatedBloodLoss.toFixed(1)} mL`);
+    if (!data || data.length === 0) {
+        console.error("⚠️ No data loaded");
+        return;
     }
 
-    parentDiv.append("div").attr("id", "selected-count").style("margin-left", "20px").style("font-size", "16px").text("Selected Patients: 0");
-    parentDiv.append("div").attr("id", "mean-blood-loss").style("margin-left", "20px").style("font-size", "16px").text("Mean Blood Loss: 0 mL");
+    // Define drug categories
+    const drugs = ["Ephedrine", "Phenylephrine", "Epinephrine"];
+
+    // Remove outliers using the 95th percentile
+    const bloodLossValues = data.map(d => +d.intraop_ebl).filter(v => v > 0);
+    const threshold = d3.quantile(bloodLossValues, 0.95);
+    console.log("Outlier threshold:", threshold);
+
+    // Process Data: Group by Surgery Duration and Drug Type
+    let timeBins = { "Ephedrine": {}, "Phenylephrine": {}, "Epinephrine": {} };
+
+    data.forEach(d => {
+        let duration = Math.round((d.caseend - d.casestart) / 60) || 0; // Convert to hours
+        let bloodLoss = +d.intraop_ebl;
+
+        if (duration > 0 && bloodLoss <= threshold) { // Remove extreme outliers
+            let primaryDrug = getPrimaryDrug(d);
+            if (!timeBins[primaryDrug][duration]) {
+                timeBins[primaryDrug][duration] = { count: 0, totalLoss: 0 };
+            }
+            timeBins[primaryDrug][duration].count++;
+            timeBins[primaryDrug][duration].totalLoss += bloodLoss;
+        }
+    });
+
+    // Convert grouped data into an array
+    let processedData = drugs.map(drug => ({
+        drug: drug,
+        values: smoothData(
+            Object.keys(timeBins[drug]).map(duration => ({
+                duration: +duration,
+                avgBloodLoss: timeBins[drug][duration].totalLoss / timeBins[drug][duration].count
+            })).sort((a, b) => a.duration - b.duration)
+        )
+    }));
+
+    // Create separate charts for each drug
+    processedData.forEach(drugData => {
+        createBrushableLineChart(drugData);
+    });
+}).catch(error => console.error("❌ Error loading data:", error));
+
+// 📌 **Determine Primary Drug Used**
+function getPrimaryDrug(d) {
+    const drugValues = { "Ephedrine": d.intraop_eph, "Phenylephrine": d.intraop_phe, "Epinephrine": d.intraop_epi };
+    return Object.keys(drugValues).reduce((a, b) => (drugValues[a] > drugValues[b] ? a : b));
 }
 
-function updateVisualization() {
-    d3.select("#charts-container").remove();
-    const estimatedBloodLoss = estimateBloodLoss();
-    const chartsContainer = d3.select("body").append("div").attr("id", "charts-container").attr("class", "chart-container");
-    createBloodLossHistogram(chartsContainer, window.data, estimatedBloodLoss);
+// 📉 **Apply Moving Average Smoothing (to balance trends)**
+function smoothData(data, windowSize = 5) {
+    return data.map((d, i, arr) => {
+        const start = Math.max(0, i - windowSize + 1);
+        const subset = arr.slice(start, i + 1);
+        return {
+            duration: d.duration,
+            avgBloodLoss: d3.mean(subset, v => v.avgBloodLoss)
+        };
+    });
 }
 
-Object.values(drugSliders).forEach(slider => {
-    slider.on("input", updateVisualization);
-});
+// 🎨 **Color Scale for Drug Types**
+const colorScale = d3.scaleOrdinal()
+    .domain(["Ephedrine", "Phenylephrine", "Epinephrine"])
+    .range(["#ff6666", "#66b3ff", "#99ff99"]);  // Red, Blue, Green
 
-updateVisualization();
+// 📈 **Brushable Line Chart**
+function createBrushableLineChart(drugData) {
+    const width = 700, height = 300, margin = { top: 50, right: 50, bottom: 50, left: 80 };
+
+    // Create individual container for each chart
+    const container = d3.select("#charts-container")
+        .append("div")
+        .attr("class", "chart-container");
+
+    container.append("h2")
+        .text(`${drugData.drug} - Blood Loss Over Time`)
+        .style("text-align", "center")
+        .style("margin-bottom", "10px");
+
+    const svg = container.append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .style("background", "#f8f8f8");
+
+    // Define a **clipPath** to prevent line overflow
+    svg.append("defs").append("clipPath")
+        .attr("id", `clip-${drugData.drug}`)
+        .append("rect")
+        .attr("x", margin.left)
+        .attr("y", margin.top)
+        .attr("width", width - margin.left - margin.right)
+        .attr("height", height - margin.top - margin.bottom);
+
+    // Scales
+    const xScale = d3.scaleLinear()
+        .domain([0, d3.max(drugData.values, d => d.duration)])
+        .range([margin.left, width - margin.right]);
+
+    const yMax = d3.max(drugData.values, d => d.avgBloodLoss);
+    const yScale = d3.scaleLinear()
+        .domain([0, yMax]) // FIXED Y-AXIS TO AVOID OVERSHOOTING
+        .range([height - margin.bottom, margin.top]);
+
+    // Axes
+    const xAxis = svg.append("g")
+        .attr("transform", `translate(0, ${height - margin.bottom})`)
+        .call(d3.axisBottom(xScale).ticks(10));
+
+    const yAxis = svg.append("g")
+        .attr("transform", `translate(${margin.left}, 0)`)
+        .call(d3.axisLeft(yScale));
+
+    // Line generator
+    const line = d3.line()
+        .x(d => xScale(d.duration))
+        .y(d => yScale(d.avgBloodLoss))
+        .curve(d3.curveMonotoneX);
+
+    // Create path for animation **inside the clipPath**
+    let path = svg.append("g")
+        .attr("clip-path", `url(#clip-${drugData.drug})`) // Apply clipping here
+        .append("path")
+        .attr("fill", "none")
+        .attr("stroke", colorScale(drugData.drug))
+        .attr("stroke-width", 2);
+
+    let totalDataPoints = drugData.values.length;
+    let batchSize = 5; // Slower rendering (5 points per batch)
+    let index = 0;
+
+    function drawStep() {
+        if (index < totalDataPoints) {
+            let batchEnd = Math.min(index + batchSize, totalDataPoints);
+            path.datum(drugData.values.slice(0, batchEnd))
+                .attr("d", line);
+
+            index += batchSize;
+            setTimeout(drawStep, 150); // Slower rendering speed
+        }
+    }
+    drawStep();  // Start drawing
+
+    // 📌 **Brush for Zooming (Only X-axis Zooms)**
+    const brush = d3.brushX()
+        .extent([[margin.left, margin.top], [width - margin.right, height - margin.bottom]])
+        .on("end", brushed);
+
+    svg.append("g")
+        .attr("class", "brush")
+        .call(brush);
+
+    function brushed({ selection }) {
+        if (!selection) return;
+
+        const [x0, x1] = selection.map(xScale.invert);
+        xScale.domain([x0, x1]);  // Update X-axis, but Y-axis remains fixed
+
+        xAxis.transition()
+            .duration(500)
+            .call(d3.axisBottom(xScale).ticks(5));
+
+        path.transition()
+            .duration(500)
+            .attr("d", line(drugData.values));
+
+        svg.select(".brush").call(brush.move, null);
+    }
+
+    // 📌 **Double-click to Reset Zoom**
+    svg.on("dblclick", function () {
+        xScale.domain([0, d3.max(drugData.values, d => d.duration)]);
+        xAxis.transition().duration(500).call(d3.axisBottom(xScale).ticks(10));
+        path.transition().duration(500).attr("d", line(drugData.values));
+    });
+}
