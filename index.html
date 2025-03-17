@@ -9,7 +9,7 @@
 
 <body>
     <link rel="stylesheet" href="style.css">
-    <nav>
+    <!-- <!-- <nav>
         <ul>
             <li><a href="index.html">Introduction</a></li>
             <li><a href="scroll_animation/index.html">Drug Explanation</a></li>
@@ -17,13 +17,16 @@
             <li><a href="takeaway/takeaway.html">Takeaway Insights</a></li> <!-- NEW LINK TO TAKEAWAY PAGE -->
 
 
-        </ul>
-    </nav>
+    </ul>
+    </nav> -->
     <script src="intro.js" type="module"></script>
 
     <h1> Affects of Anesthesia on Blood Loss</h1>
 
     <script src="main.js" type="module"></script>
+    <script src="global.js" type="module"></script>
+
+
     </script src="global.js">
     <p> Perhaps the greatest fear when it comes to going under the table is the blood loss you will undergo.
         Blood loss is no serious matter; excessive blood loss during a surgery can lead to postoperative
@@ -38,6 +41,9 @@
     <p> We trained a linear regression model based on the drugs we learned to increase blood pressure
         to see how they affect blood loss. Using this model we predict the blood loss a patient undergoes
         based on how much of each drug was administered. </p>
+
+    <h2>Animated Multi-Line Chart: Average Blood Loss Over Surgery Duration</h2>
+    <div id="charts-container"></div>
 </body>
 
 </html>
