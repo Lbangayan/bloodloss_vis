@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vasoconstriction Scroll Animation</title>
+    <link rel="stylesheet" href="../style.css">
+
     <style>
         body {
             margin: 0;
-            height: 200vh; /* Extra height to enable scrolling */
+            height: 200vh;
+            /* Extra height to enable scrolling */
             display: flex;
             align-items: center;
             justify-content: center;
@@ -17,6 +21,7 @@
             margin-inline: auto;
             padding: 0 1rem;
         }
+
         .nav-container {
             position: fixed;
             top: 0;
@@ -25,15 +30,18 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 10;
         }
+
         nav ul,
         nav li {
             display: contents;
         }
+
         nav {
             display: flex;
             margin-bottom: 20px;
             border-bottom: 1px solid oklch(80% 3% 200%);
         }
+
         nav a {
             flex: 1;
             text-decoration: none;
@@ -41,15 +49,19 @@
             text-align: center;
             padding: 0.5em;
         }
+
         nav a.current {
             border-bottom: 0.4em solid oklch(80% 3% 200%);
             padding-bottom: 0.1em;
         }
+
         nav a:hover {
             border-bottom: 0.4em solid var(--color--accent);
         }
+
         .title {
-            margin-top: 60px; /* Adjust to ensure title is below the nav */
+            margin-top: 60px;
+            /* Adjust to ensure title is below the nav */
             font-size: 24px;
             font-weight: bold;
             background-color: white;
@@ -58,6 +70,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             z-index: 10;
         }
+
         .container {
             position: fixed;
             top: 50%;
@@ -65,6 +78,7 @@
             transform: translate(-50%, -50%);
             text-align: center;
         }
+
         .vessel {
             width: 1000px;
             height: 300px;
@@ -74,51 +88,68 @@
             overflow: hidden;
             position: relative;
         }
+
         .circle {
             width: 30px;
             height: 30px;
             background-color: red;
             border-radius: 50%;
             position: absolute;
-            top: 70%; /* Adjusted from 70% to 65% to translate up */
+            top: 70%;
+            /* Adjusted from 70% to 65% to translate up */
             transform: translateY(-50%);
             animation: moveRight 5s linear infinite, bounce 2s ease-in-out infinite;
         }
+
         .spacer {
             height: 150vh;
         }
+
         @keyframes moveRight {
             0% {
                 left: -30px;
             }
+
             100% {
                 left: 100%;
             }
         }
+
         @keyframes bounce {
-            0%, 100% {
+
+            0%,
+            100% {
                 transform: translateY(-50%);
             }
+
             50% {
-                transform: translateY(${-(height * 0.8 - 30)}px);
+                transform: translateY($ {
+                        -(height * 0.8 - 30)
+                    }
+
+                    px);
             }
         }
+
         :root {
             --color--accent: oklch(66.67% 30% 296.47);
         }
+
         html {
             accent-color: var(--color--accent);
         }
-        
     </style>
 </head>
+
 <body>
     <div class="nav-container">
         <nav>
             <ul>
                 <li><a href="../index.html">Introduction</a></li>
-                <li><a href="../scroll_animation/index.html">Drug explaination</a></li>
+                <li><a href="../scroll_animation/index.html">Drug Explanation</a></li>
                 <li><a href="../bloodpressure/index.html">Blood Pressure</a></li>
+                <li><a href="../takeaway/takeaway.html">Takeaway Insights</a></li>
+
             </ul>
         </nav>
         <div class="title">Vasoconstriction Scroll Animation</div>
@@ -179,4 +210,5 @@
         updateBounceAnimation(300); // Initial call to set the bounce animation
     </script>
 </body>
+
 </html>
