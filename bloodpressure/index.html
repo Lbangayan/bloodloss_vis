@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blood Pressure Comparison</title>
-    <link rel = "stylesheet" href = "../style.css">
+    <link rel="stylesheet" href="../style.css">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <!-- React dependencies -->
     <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
 
-<!-- Babel for JSX compilation -->
+    <!-- Babel for JSX compilation -->
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
-<!-- Recharts library -->
+    <!-- Recharts library -->
     <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
-    <style src = ../style.css>
+    <link rel="stylesheet" href="../style.css">
     <style>
         body {
             margin: 0;
@@ -24,7 +25,8 @@
             overflow-x: hidden;
         }
 
-        h1, h2 {
+        h1,
+        h2 {
             text-align: center;
             padding: 20px 0;
             margin: 0;
@@ -130,12 +132,19 @@
         }
 
         @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
                 transform: translateY(0) translateX(-50%);
             }
+
             40% {
                 transform: translateY(-20px) translateX(-50%);
             }
+
             60% {
                 transform: translateY(-10px) translateX(-50%);
             }
@@ -163,16 +172,19 @@
     <nav>
         <ul>
             <li><a href="../index.html">Introduction</a></li>
-            <li><a href="../scroll_animation/index.html">Drug explaination</a></li>
+            <li><a href="../scroll_animation/index.html">Drug Explanation</a></li>
             <li><a href="../bloodpressure/index.html">Blood Pressure</a></li>
+            <li><a href="../takeaway/takeaway.html">Takeaway Insights</a></li>
         </ul>
-   </nav>
-   <p> Patients would commonly attribute blood loss to drugs taken before the operation . However, is there a factor outside of just the drug you take that is highly important in the amount of blood lost during an operation?
+    </nav>
+    <p> Patients would commonly attribute blood loss to drugs taken before the operation . However, is there a factor
+        outside of just the drug you take that is highly important in the amount of blood lost during an operation?
 
-    The answer is Yup!
-    
-    If you have diagnosed hypertension, you are at greater risk to lose even more blood. Check the visualization below to get proof, 
-     </p>
+        The answer is Yup!
+
+        If you have diagnosed hypertension, you are at greater risk to lose even more blood. Check the visualization
+        below to get proof,
+    </p>
     <!-- Progress bar at top of page -->
     <div class="progress-container">
         <div class="progress-bar" id="progressBar"></div>
@@ -181,37 +193,38 @@
     <!-- Normal Blood Pressure Section -->
     <div class="blood-container normal-section" id="normal-section">
         <h2 class="section-title">Normal Blood Pressure</h2>
-       
+
         <div class="info-panel">
             <h3>Blood Pressure</h3>
             <p><strong>Average BP of those Without Hypertension:</strong> 167 mL</p>
             <p>Normal blood flow is steady and controlled, with blood cells maintaining proper vessel integrity.</p>
         </div>
-       
+
         <div class="blood-animation" id="normal-animation">
             <!-- Blood vessel image -->
             <img src="bloodvessel.png" alt="Blood Vessel" class="blood-vessel" id="normal-vessel">
             <div class="hole" id="normal-hole"></div>
             <!-- Circles will be created dynamically -->
         </div>
-       
+
         <div class="scroll-hint">
             <p>Scroll Down to See Hypertension</p>
             <div>⬇️</div>
         </div>
     </div>
- 
- 
+
+
     <!-- Hypertension Section -->
     <div class="blood-container hypertension-section" id="hypertension-section">
         <h2 class="section-title">Hypertension</h2>
-       
+
         <div class="info-panel">
             <h3> Blood Pressure</h3>
             <p><strong>Average BP of those With Hypertension:</strong> 183 mL</p>
-            <p>Hypertensive blood flow is faster and more forceful, creating increased pressure on vessel walls leading to potential damage.</p>
+            <p>Hypertensive blood flow is faster and more forceful, creating increased pressure on vessel walls leading
+                to potential damage.</p>
         </div>
-       
+
         <div class="blood-animation" id="hypertension-animation">
             <!-- Blood vessel image -->
             <img src="bloodvessel.png" alt="Blood Vessel" class="blood-vessel" id="hypertension-vessel">
@@ -221,7 +234,7 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             // Set up normal blood pressure animation
             setupBloodAnimation('normal-animation', 'normal-vessel', 'normal-hole', {
                 drippingChance: 0.2,  // 20% chance when idle
@@ -230,7 +243,7 @@
                 sizeMultiplier: 1,     // baseline size multiplier
                 colorIntensity: 0      // baseline color intensity
             });
-            
+
             // Set up hypertension animation
             setupBloodAnimation('hypertension-animation', 'hypertension-vessel', 'hypertension-hole', {
                 drippingChance: 0.6,   // 60% chance when idle
@@ -239,25 +252,25 @@
                 sizeMultiplier: 1.2,   // larger drops
                 colorIntensity: 30     // more intense red color
             });
-            
+
             // Progress bar functionality
-            window.onscroll = function() {
+            window.onscroll = function () {
                 updateProgressBar();
                 checkVisibility();
             };
-            
+
             function updateProgressBar() {
                 const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
                 const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
                 const scrolled = (winScroll / height) * 100;
                 document.getElementById("progressBar").style.width = scrolled + "%";
             }
-            
+
             function checkVisibility() {
                 const normalSection = document.getElementById('normal-section');
                 const hyperSection = document.getElementById('hypertension-section');
                 const scrollPosition = window.scrollY + window.innerHeight / 2;
-                
+
                 // If we're in the hypertension section, create a burst of blood
                 if (isElementInView(hyperSection)) {
                     if (!hyperSection.hasAttribute('data-activated')) {
@@ -265,13 +278,13 @@
                         hyperSection.setAttribute('data-activated', 'true');
                     }
                 }
-                
+
                 // If we return to normal section, remove the activated attribute from hypertension
                 if (isElementInView(normalSection) && !isElementInView(hyperSection)) {
                     hyperSection.removeAttribute('data-activated');
                 }
             }
-            
+
             function isElementInView(element) {
                 const rect = element.getBoundingClientRect();
                 return (
@@ -280,25 +293,25 @@
                 );
             }
         });
-        
+
         function setupBloodAnimation(containerId, vesselId, holeId, settings) {
             const container = document.getElementById(containerId);
             const bloodVessel = document.getElementById(vesselId);
             const maxCircles = 80;
             let circles = [];
             let holePosition = { x: 0, y: 0 };
-            
+
             // Function to determine hole position based on the image
             function updateHolePosition() {
                 const vesselRect = bloodVessel.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
-                
+
                 // Position at the bottom of the vessel image
                 holePosition = {
                     x: vesselRect.left - containerRect.left + vesselRect.width / 2,
                     y: vesselRect.top - containerRect.top + vesselRect.height - 20
                 };
-                
+
                 // Update the visible hole element position
                 const holeElement = document.getElementById(holeId);
                 if (holeElement) {
@@ -306,7 +319,7 @@
                     holeElement.style.top = `${holePosition.y}px`;
                 }
             }
-            
+
             // Create flying circle from hole
             function createFlyingCircle() {
                 if (circles.length >= maxCircles) {
@@ -318,37 +331,37 @@
                         }
                     }
                 }
-                
+
                 const circle = document.createElement('div');
                 circle.classList.add('circle');
-                
+
                 // Position at the hole (with small random variation)
                 const startLeft = holePosition.x - 7.5 + (Math.random() * 6 - 3);
                 const startTop = holePosition.y - 7.5 + (Math.random() * 4 - 2);
-                
+
                 circle.style.left = `${startLeft}px`;
                 circle.style.top = `${startTop}px`;
-                
+
                 // Add to container
                 container.appendChild(circle);
-                
+
                 // Direction vector - mostly downward with some variation
                 const angleVariation = Math.PI / 6; // +/- 30 degrees
                 const angle = Math.PI / 2 + (Math.random() * angleVariation * 2 - angleVariation);
                 const baseSpeed = 1.5 + Math.random() * 2.5;
                 const speed = baseSpeed * settings.speedMultiplier;
-                
+
                 // Vary size slightly for more realism
                 const baseSize = 10 + Math.random() * 10;
                 const size = baseSize * settings.sizeMultiplier;
                 circle.style.width = `${size}px`;
                 circle.style.height = `${size}px`;
-                
+
                 // Vary color slightly - make more intense for hypertension
                 const red = Math.min(255, 170 + settings.colorIntensity + Math.floor(Math.random() * 70));
                 const alpha = 0.7 + Math.random() * 0.3;
                 circle.style.backgroundColor = `rgba(${red}, 0, 0, ${alpha})`;
-                
+
                 circles.push({
                     element: circle,
                     dx: Math.cos(angle) * speed,
@@ -357,39 +370,39 @@
                     age: 0,
                     size: size
                 });
-                
+
                 return circle;
             }
-            
+
             // Update flying circles
             function updateFlyingCircles() {
                 const containerRect = container.getBoundingClientRect();
-                
+
                 for (let i = circles.length - 1; i >= 0; i--) {
                     const circle = circles[i];
                     circle.age++;
-                    
+
                     // Get current position
                     let leftPos = parseFloat(circle.element.style.left);
                     let topPos = parseFloat(circle.element.style.top);
-                    
+
                     // Update position
                     leftPos += circle.dx;
                     topPos += circle.dy;
-                    
+
                     // Add gravity effect
                     circle.dy += 0.07;
-                    
+
                     // Add slight horizontal wobble for realism
                     circle.dx += (Math.random() - 0.5) * 0.1;
-                    
+
                     // Fade out as they get older or leave the container
-                    if (circle.age > 60 || 
+                    if (circle.age > 60 ||
                         leftPos < -circle.size || leftPos > containerRect.width ||
                         topPos < -circle.size || topPos > containerRect.height) {
                         circle.opacity -= 0.04;
                     }
-                    
+
                     // Remove if completely transparent
                     if (circle.opacity <= 0) {
                         if (circle.element.parentNode) {
@@ -398,22 +411,22 @@
                         circles.splice(i, 1);
                         continue;
                     }
-                    
+
                     // Update element
                     circle.element.style.left = `${leftPos}px`;
                     circle.element.style.top = `${topPos}px`;
                     circle.element.style.opacity = circle.opacity;
                 }
             }
-            
+
             // Add "dripping" effect even when not scrolling
-            let drippingInterval = setInterval(function() {
+            let drippingInterval = setInterval(function () {
                 // Only create circles if container is in viewport
                 if (isInViewport(container) && Math.random() < settings.drippingChance) {
                     createFlyingCircle();
                 }
             }, settings.drippingInterval);
-            
+
             // Animation loop
             function animate() {
                 if (isInViewport(container)) {
@@ -422,23 +435,23 @@
                 }
                 requestAnimationFrame(animate);
             }
-            
+
             // Initialize
-            bloodVessel.onload = function() {
+            bloodVessel.onload = function () {
                 updateHolePosition();
                 animate();
             };
-            
+
             // In case the image is already loaded
             if (bloodVessel.complete) {
                 updateHolePosition();
                 animate();
             }
-            
+
             // Handle window resize
-            window.addEventListener('resize', function() {
+            window.addEventListener('resize', function () {
                 updateHolePosition();
-                
+
                 // Clear all flying circles
                 circles.forEach(circle => {
                     if (circle.element.parentNode) {
@@ -447,7 +460,7 @@
                 });
                 circles = [];
             });
-            
+
             // Check if element is in viewport
             function isInViewport(element) {
                 const rect = element.getBoundingClientRect();
@@ -457,11 +470,11 @@
                 );
             }
         }
-        
+
         // Function to create a burst of blood when entering the hypertension section
         function createBloodBurst(containerId, count) {
             for (let i = 0; i < count; i++) {
-                setTimeout(function() {
+                setTimeout(function () {
                     const event = new CustomEvent('createBloodCircle', {
                         detail: { containerId: containerId }
                     });
@@ -469,82 +482,82 @@
                 }, i * 50);
             }
         }
-        
+
         // Listen for create blood circle events
-        document.addEventListener('createBloodCircle', function(e) {
+        document.addEventListener('createBloodCircle', function (e) {
             const container = document.getElementById(e.detail.containerId);
             if (!container) return;
-            
+
             const bloodVessel = container.querySelector('.blood-vessel');
             if (!bloodVessel) return;
-            
+
             const containerRect = container.getBoundingClientRect();
             const vesselRect = bloodVessel.getBoundingClientRect();
-            
+
             // Calculate hole position
             const holeX = vesselRect.left - containerRect.left + vesselRect.width / 2;
             const holeY = vesselRect.top - containerRect.top + vesselRect.height - 20;
-            
+
             // Create circle
             const circle = document.createElement('div');
             circle.classList.add('circle');
-            
+
             // Position at the hole with variation
             const startLeft = holeX - 7.5 + (Math.random() * 6 - 3);
             const startTop = holeY - 7.5 + (Math.random() * 4 - 2);
-            
+
             circle.style.left = `${startLeft}px`;
             circle.style.top = `${startTop}px`;
-            
+
             // Determine if hypertension or normal
             const isHypertension = e.detail.containerId === 'hypertension-animation';
-            
+
             // Set size and color
             const size = (10 + Math.random() * 10) * (isHypertension ? 1.2 : 1);
             circle.style.width = `${size}px`;
             circle.style.height = `${size}px`;
-            
+
             const colorIntensity = isHypertension ? 30 : 0;
             const red = Math.min(255, 170 + colorIntensity + Math.floor(Math.random() * 70));
             circle.style.backgroundColor = `rgba(${red}, 0, 0, ${0.7 + Math.random() * 0.3})`;
-            
+
             // Add to container
             container.appendChild(circle);
-            
+
             // Animation properties
             const speed = (1.5 + Math.random() * 2.5) * (isHypertension ? 1.5 : 1);
-            const angle = Math.PI / 2 + (Math.random() * Math.PI/3 - Math.PI/6);
-            
+            const angle = Math.PI / 2 + (Math.random() * Math.PI / 3 - Math.PI / 6);
+
             // Animate
             let dx = Math.cos(angle) * speed;
             let dy = Math.sin(angle) * speed;
             let opacity = 1;
             let age = 0;
-            
+
             function animateCircle() {
                 age++;
-                
+
                 // Get current position
                 let leftPos = parseFloat(circle.style.left);
                 let topPos = parseFloat(circle.style.top);
-                
+
                 // Update position
                 leftPos += dx;
                 topPos += dy;
-                
+
                 // Add gravity effect
                 dy += 0.07;
-                
+
                 // Add slight horizontal wobble
                 dx += (Math.random() - 0.5) * 0.1;
-                
+
                 // Fade out
-                if (age > 60 || 
+                if (age > 60 ||
                     leftPos < -size || leftPos > containerRect.width ||
                     topPos < -size || topPos > containerRect.height) {
                     opacity -= 0.04;
                 }
-                
+
                 // Remove if completely transparent
                 if (opacity <= 0) {
                     if (circle.parentNode) {
@@ -552,15 +565,15 @@
                     }
                     return;
                 }
-                
+
                 // Update element
                 circle.style.left = `${leftPos}px`;
                 circle.style.top = `${topPos}px`;
                 circle.style.opacity = opacity;
-                
+
                 requestAnimationFrame(animateCircle);
             }
-            
+
             requestAnimationFrame(animateCircle);
         });
     </script>

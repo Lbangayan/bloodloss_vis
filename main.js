@@ -1,8 +1,12 @@
 import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7.9.0/+esm";
 
-// Create form container
-const formContainer = d3.select("body").append("div").attr("class", "form-container");
-const form = formContainer.append("form");
+// Set up SVG container
+const width = 700, height = 300;
+const svg = d3.select("#blood-vessel")
+    .append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .style("background", "black");
 
 // Define anesthesia drug names
 const drugNames = ['intraop_eph', 'intraop_phe', 'intraop_epi'];

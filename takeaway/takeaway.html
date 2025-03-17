@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Takeaway Insights</title>
+    <link rel="stylesheet" href="../style.css">
+
+</head>
+
+<body>
+    <nav>
+        <ul>
+            <li><a href="../index.html">Introduction</a></li>
+            <li><a href="../scroll_animation/index.html">Drug Explanation</a></li>
+            <li><a href="../bloodpressure/index.html">Blood Pressure</a></li>
+            <li><a href="takeaway.html" class="active">Takeaway Insights</a></li>
+        </ul>
+    </nav>
+
+    <h1>Key Takeaways: How Anesthesia Drugs Impact Blood Loss</h1>
+
+    <p> We trained a linear regression model based on the drugs we learned to increase blood pressure
+        to see how they affect blood loss. Using this model, we predict the blood loss a patient undergoes
+        based on how much of each drug was administered. </p>
+
+    <!-- Drug sliders (moved from main.js) -->
+    <div id="slider-container" class="slider-container"></div>
+
+    <h2>Predicted Blood Loss Histogram</h2>
+    <div id="histogram-container" class="chart-container"></div>
+
+
+    <script type="module" src="../takeaway.js"></script>
+</body>
+
+</html>
