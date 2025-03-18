@@ -180,3 +180,23 @@ Object.values(drugSliders).forEach(slider => {
 
 // Initial rendering
 updateVisualization();
+
+// Add final insights and explanation to the page
+function addFinalInsights() {
+    const insightsContainer = d3.select("body").append("div").attr("class", "insights-container");
+
+    // Add "What to Learn" section
+    insightsContainer.append("h2").text("What is One Thing Everyone Should Learn from Our Project?");
+    insightsContainer.append("p").text(
+        "One thing everyone should learn from our project is that you shouldn’t focus on what drugs you were administered prior to surgery in terms of blood loss; therefore, you need to focus on factors like lowering your hypertension and stress as much as possible and consider your age and sex. Another thing is that not all drugs that are vasoconstrictors eliminate blood loss; you are still at risk to possibly go under a decent amount of blood loss. So, choose the right surgeon."
+    );
+
+    // Add "Why Our Project Succeeds" section
+    insightsContainer.append("h2").text("Why Does Our Project Succeed at Explaining It?");
+    insightsContainer.append("p").text(
+        "Our project succeeds at explaining it because we specifically show the impact of each individual drug over time, and when all the drugs are combined together into one system, our takeaway visualization shows which one also has the biggest impact on the blood loss of the patient regardless of time."
+    );
+}
+
+// Call the function to add final insights
+addFinalInsights();

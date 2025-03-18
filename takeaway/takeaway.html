@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Takeaway Insights</title>
     <link rel="stylesheet" href="../style.css">
-
 </head>
 
 <body>
@@ -21,9 +20,11 @@
 
     <h1>Key Takeaways: How Anesthesia Drugs Impact Blood Loss</h1>
 
-    <p> We trained a linear regression model based on the drugs we learned to increase blood pressure
-        to see how they affect blood loss. Using this model, we predict the blood loss a patient undergoes
-        based on how much of each drug was administered. </p>
+    <!-- Annotation -->
+    <p>
+        This visualization predicts the blood loss you will undergo based on the amount of drugs you are administered. 
+        Something interesting to point out is that we found that epinephrine had the highest impact on blood loss.
+    </p>
 
     <!-- Drug sliders (moved from main.js) -->
     <div id="slider-container" class="slider-container"></div>
@@ -31,6 +32,16 @@
     <h2>Predicted Blood Loss Histogram</h2>
     <div id="histogram-container" class="chart-container"></div>
 
+    <!-- Additional Takeaway Section -->
+    <h2>What is One Thing Everyone Should Learn from Our Project?</h2>
+    <p>
+        One thing everyone should learn from our project is that you shouldn’t focus on what drugs you were administered prior to surgery in terms of blood loss; therefore, you need to focus on factors like lowering your hypertension and stress as much as possible and consider your age and sex. Another thing is that not all drugs that are vasoconstrictors eliminate blood loss; you are still at risk to possibly go under a decent amount of blood loss. So, choose the right surgeon.
+    </p>
+
+    <h2>Why Does Our Project Succeed at Explaining It?</h2>
+    <p>
+        Our project succeeds at explaining it because we specifically show the impact of each individual drug over time, and when all the drugs are combined together into one system, our takeaway visualization shows which one also has the biggest impact on the blood loss of the patient regardless of time.
+    </p>
 
     <script type="module" src="../takeaway.js"></script>
 </body>

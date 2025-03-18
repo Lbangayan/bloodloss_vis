@@ -184,3 +184,23 @@ function createBrushableLineChart(drugData) {
         path.transition().duration(500).attr("d", line(drugData.values));
     });
 }
+// Get all nav links
+const navLinks = document.querySelectorAll('nav a');
+
+// Add click event listener to each nav link
+navLinks.forEach(link => {
+  link.addEventListener('click', function() {
+    // Remove the "clicked" class from all links
+    navLinks.forEach(nav => nav.classList.remove('clicked'));
+    
+    // Add the "clicked" class to the clicked link
+    this.classList.add('clicked');
+
+    // Optionally, remove the clicked effect after animation duration (for reusability)
+    setTimeout(() => {
+      this.classList.remove('clicked');
+    }, 800); // Matches the animation duration
+  });
+});
+
+
